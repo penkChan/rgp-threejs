@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { animationFrameScheduler, debounceTime, takeUntil } from "rxjs";
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 // 基于 three.js 的简单旋转立方体示例
 export function MainGame() {
@@ -13,6 +14,8 @@ export function MainGame() {
   const mainGameRef = useRef<HTMLDivElement>(null);
   const destorySubject$ = useDestorySubject();
   useEffect(() => {
+    const gui = new GUI();
+
     // 仅在组件挂载完成后初始化 three.js 场景
     if (!mainGameRef.current) return;
 
@@ -83,6 +86,10 @@ export function MainGame() {
           renderer.setSize(width, height); // 更新渲染器尺寸
         },
       });
+
+      const folder = gui.addFolder("Cube"); // 添加一个文件夹 
+      folder.add(cube.position, 'x', -2, 2, 0.1).name("x position");
+      folder.addColor(cube.material, 'color').name("color");
 
     // 组件卸载时停止动画循环、移除 DOM 并释放 Three.js 资源
     return () => {
