@@ -7,6 +7,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { animationFrameScheduler, debounceTime, takeUntil } from "rxjs";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
+import { Terrain } from "./domain/Terrain";
 
 // 基于 three.js 的简单旋转立方体示例
 export function MainGame() {
@@ -45,12 +46,6 @@ export function MainGame() {
     ambientLight.intensity = 0.5; // 设置环境光的强度
     scene.add(ambientLight); // 将环境光添加到场景中
 
-    // 创建一个绿色立方体作为演示用模型
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-
     const stats = new Stats(); // 创建一个统计信息对象
     document.body.appendChild(stats.dom); // 将统计信息对象添加到页面中
 
@@ -60,13 +55,12 @@ export function MainGame() {
     const controls = new OrbitControls(camera, renderer.domElement);
     // controls.update() must be called after any manual changes to the camera's transform
     controls.update(); // 更新控制器
+    const terrain = new Terrain(10, 10);
+    scene.add(terrain);
 
     function animate(time: number) {
       controls.update(); // 更新控制器
       stats.update(); // 更新统计信息
-      // 根据时间让立方体在两个轴上持续旋转
-      cube.rotation.x = time / 2000;
-      cube.rotation.y = time / 1000;
 
       // 每一帧重新渲染当前场景
       renderer.render(scene, camera);
@@ -87,10 +81,13 @@ export function MainGame() {
         },
       });
 
-      const folder = gui.addFolder("Cube"); // 添加一个文件夹 
-      folder.add(cube.position, 'x', -2, 2, 0.1).name("x position");
-      folder.addColor(cube.material, 'color').name("color");
-
+    const terrainFolder = gui.addFolder("Terrain"); // 添加一个文件夹
+    terrainFolder.add(terrain, "width", 1, 20, 1).name("width");
+    terrainFolder.add(terrain, "height", 1, 20, 1).name("height");
+    terrainFolder.addColor(terrain, "color").name("color");
+    terrainFolder.onChange(() => {
+      terrain.updateGeometry();
+    });
     // 组件卸载时停止动画循环、移除 DOM 并释放 Three.js 资源
     return () => {
       renderer.setAnimationLoop(null);
@@ -99,8 +96,6 @@ export function MainGame() {
       }
       controls.dispose();
       renderer.dispose();
-      geometry.dispose();
-      material.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }

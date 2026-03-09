@@ -1,4 +1,4 @@
-import { MainGame } from "@/features/MainGame";
+import { MainGame } from "@/features/main-game/MainGame";
 
 // 应用首页：负责整体布局，将 three.js 主游戏居中展示
 export default function Home() {
